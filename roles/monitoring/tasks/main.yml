@@ -85,6 +85,15 @@
     - monitoring
     - grafana
 
+    
+- name: Remove existing Home Assistant container to prevent conflicts
+  community.docker.docker_container:
+    name: homeassistant
+    state: absent
+    keep_volumes: yes
+  tags:
+    - monitoring
+
 - name: Start Docker Compose monitoring stack
   community.docker.docker_compose_v2:
     project_src: "{{ network_monitoring_dir }}"
