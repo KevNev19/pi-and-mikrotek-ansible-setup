@@ -170,7 +170,7 @@
       # Custom aliases
       alias ll='ls -la'
       alias dc='docker compose'
-      alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+      alias dps='docker ps --format "table {{ '{{' }}.Names{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}"'
       alias dlogs='docker compose logs -f'
       alias ansible-sync='sudo systemctl start ansible-boot-sync.service'
       alias sync-status='sudo systemctl status ansible-boot-sync.service'
