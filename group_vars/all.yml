@@ -1,0 +1,102 @@
+---
+# =============================================================================
+# Raspberry Pi Ansible Configuration - Global Variables
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# System Configuration
+# -----------------------------------------------------------------------------
+pi_hostname: keeper
+pi_timezone: Europe/London
+pi_locale: en_GB.UTF-8
+
+# -----------------------------------------------------------------------------
+# Network Configuration
+# -----------------------------------------------------------------------------
+pi_ip: 192.168.88.253
+mikrotik_ip: 192.168.88.1
+network_subnet: 192.168.88.0/24
+
+# -----------------------------------------------------------------------------
+# User Configuration
+# -----------------------------------------------------------------------------
+pi_user: pi
+pi_home: /home/pi
+
+# -----------------------------------------------------------------------------
+# Directory Paths
+# -----------------------------------------------------------------------------
+network_monitoring_dir: "{{ pi_home }}/network-monitoring"
+config_repo_dir: "{{ pi_home }}/pi-and-mikrotek-ansible-setup"
+scripts_dir: "{{ pi_home }}/scripts"
+
+# -----------------------------------------------------------------------------
+# Docker Configuration
+# -----------------------------------------------------------------------------
+docker_compose_version: "3.8"
+docker_log_max_size: "10m"
+docker_log_max_file: "3"
+
+# -----------------------------------------------------------------------------
+# Monitoring Stack Configuration
+# -----------------------------------------------------------------------------
+# Prometheus
+prometheus_port: 9090
+prometheus_retention_time: 30d
+prometheus_scrape_interval: 30s
+
+# Grafana
+grafana_port: 3000
+grafana_admin_user: admin
+grafana_admin_password: "ChangeMe123!"  # Change this! Consider using ansible-vault
+
+# Node Exporter
+node_exporter_port: 9100
+
+# SNMP Exporter
+snmp_exporter_port: 9116
+
+# cAdvisor
+cadvisor_port: 8080
+
+# -----------------------------------------------------------------------------
+# Home Assistant Configuration
+# -----------------------------------------------------------------------------
+homeassistant_port: 8123
+homeassistant_config_dir: "{{ network_monitoring_dir }}/homeassistant"
+
+# -----------------------------------------------------------------------------
+# Portainer Configuration
+# -----------------------------------------------------------------------------
+portainer_port: 9443
+
+# -----------------------------------------------------------------------------
+# Watchtower Configuration
+# -----------------------------------------------------------------------------
+# Schedule format: seconds minutes hours day-of-month month day-of-week
+# Default: 4 AM daily
+watchtower_schedule: "0 0 4 * * *"
+watchtower_cleanup: true
+
+# -----------------------------------------------------------------------------
+# Tailscale Configuration
+# -----------------------------------------------------------------------------
+# Leave empty for interactive authentication
+# Or set an auth key for unattended setup (from Tailscale admin console)
+tailscale_authkey: ""
+
+# Subnet routing (advertise home network for remote access)
+tailscale_advertise_routes: "192.168.88.0/24"
+tailscale_accept_routes: true
+
+# -----------------------------------------------------------------------------
+# Backup Configuration
+# -----------------------------------------------------------------------------
+backup_retention_days: 30
+backup_dir: "{{ pi_home }}/backups"
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+ansible_log_dir: /var/log/ansible
+boot_sync_log: /var/log/ansible-boot-sync.log

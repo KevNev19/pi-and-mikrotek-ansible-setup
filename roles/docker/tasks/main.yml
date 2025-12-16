@@ -1,0 +1,85 @@
+---
+# =============================================================================
+# Docker Role - Install and Configure Docker
+# =============================================================================
+
+- name: Check if Docker is installed
+  ansible.builtin.command: docker --version
+  register: docker_installed
+  ignore_errors: yes
+  changed_when: false
+  tags:
+    - docker
+
+- name: Install Docker
+  when: docker_installed.rc != 0
+  block:
+    - name: Download Docker install script
+      ansible.builtin.get_url:
+        url: https://get.docker.com
+        dest: /tmp/get-docker.sh
+        mode: '0755'
+
+    - name: Run Docker install script
+      ansible.builtin.command: /tmp/get-docker.sh
+      args:
+        creates: /usr/bin/docker
+
+    - name: Remove Docker install script
+      ansible.builtin.file:
+        path: /tmp/get-docker.sh
+        state: absent
+  tags:
+    - docker
+
+- name: Add pi user to docker group
+  ansible.builtin.user:
+    name: "{{ pi_user }}"
+    groups: docker
+    append: yes
+  tags:
+    - docker
+
+- name: Ensure Docker service is running and enabled
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: yes
+  tags:
+    - docker
+
+- name: Install Docker Compose plugin
+  ansible.builtin.apt:
+    name: docker-compose-plugin
+    state: present
+  tags:
+    - docker
+
+- name: Configure Docker daemon
+  ansible.builtin.copy:
+    dest: /etc/docker/daemon.json
+    content: |
+      {
+        "log-driver": "json-file",
+        "log-opts": {
+          "max-size": "{{ docker_log_max_size }}",
+          "max-file": "{{ docker_log_max_file }}"
+        },
+        "storage-driver": "overlay2"
+      }
+    mode: '0644'
+    owner: root
+    group: root
+  notify: Restart Docker
+  tags:
+    - docker
+
+- name: Install Python Docker library for Ansible
+  ansible.builtin.pip:
+    name:
+      - docker
+      - docker-compose
+    state: present
+    break_system_packages: yes
+  tags:
+    - docker

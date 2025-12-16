@@ -1,0 +1,37 @@
+---
+# =============================================================================
+# Home Assistant Role - Smart Home Control
+# =============================================================================
+# Note: Home Assistant is deployed as part of the monitoring docker-compose stack
+# This role handles any additional configuration if needed
+
+- name: Create Home Assistant config directory
+  ansible.builtin.file:
+    path: "{{ homeassistant_config_dir }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  tags:
+    - homeassistant
+
+- name: Check if Home Assistant configuration exists
+  ansible.builtin.stat:
+    path: "{{ homeassistant_config_dir }}/configuration.yaml"
+  register: ha_config
+  tags:
+    - homeassistant
+
+- name: Display Home Assistant status
+  ansible.builtin.debug:
+    msg: |
+      Home Assistant Configuration:
+      - Config directory: {{ homeassistant_config_dir }}
+      - Port: {{ homeassistant_port }}
+      - Access URL: http://{{ pi_ip }}:{{ homeassistant_port }}
+      - Configuration exists: {{ ha_config.stat.exists | default(false) }}
+
+      Note: Home Assistant runs in host network mode for device discovery.
+      Initial setup will be done via the web interface on first access.
+  tags:
+    - homeassistant

@@ -1,0 +1,159 @@
+---
+# =============================================================================
+# Main Playbook - Raspberry Pi Configuration
+# =============================================================================
+#
+# This playbook configures the Raspberry Pi with:
+# - Base system configuration (packages, timezone, etc.)
+# - Docker and Docker Compose
+# - Monitoring stack (Prometheus, Grafana, exporters)
+# - Home Assistant
+# - Tailscale VPN for remote access
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml
+#   ansible-playbook playbooks/site.yml --tags "docker,monitoring"
+#   ansible-playbook playbooks/site.yml --skip-tags "tailscale"
+#
+# =============================================================================
+
+- name: Configure Raspberry Pi - Keeper
+  hosts: localhost
+  become: yes
+  gather_facts: yes
+
+  # ---------------------------------------------------------------------------
+  # Pre-Tasks
+  # ---------------------------------------------------------------------------
+  pre_tasks:
+    - name: Display start message
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+                   Raspberry Pi Ansible Configuration Starting
+          ============================================================
+            Hostname: {{ ansible_hostname }}
+            IP Address: {{ ansible_default_ipv4.address | default('N/A') }}
+            OS: {{ ansible_distribution }} {{ ansible_distribution_version }}
+            Time: {{ ansible_date_time.iso8601 }}
+          ============================================================
+      tags:
+        - always
+
+    - name: Verify we're running on a Raspberry Pi
+      ansible.builtin.assert:
+        that:
+          - ansible_architecture in ['aarch64', 'armv7l', 'armv6l']
+        fail_msg: "This playbook is designed to run on a Raspberry Pi"
+        success_msg: "Running on Raspberry Pi ({{ ansible_architecture }})"
+      tags:
+        - always
+
+    - name: Check available disk space
+      ansible.builtin.assert:
+        that:
+          - ansible_mounts | selectattr('mount', 'equalto', '/') | map(attribute='size_available') | first | int > 1073741824
+        fail_msg: "Less than 1GB disk space available!"
+        success_msg: "Sufficient disk space available"
+      tags:
+        - always
+
+  # ---------------------------------------------------------------------------
+  # Roles
+  # ---------------------------------------------------------------------------
+  roles:
+    - role: common
+      tags:
+        - common
+        - base
+
+    - role: docker
+      tags:
+        - docker
+
+    - role: monitoring
+      tags:
+        - monitoring
+        - prometheus
+        - grafana
+
+    - role: homeassistant
+      tags:
+        - homeassistant
+
+    - role: tailscale
+      tags:
+        - tailscale
+        - vpn
+
+  # ---------------------------------------------------------------------------
+  # Post-Tasks
+  # ---------------------------------------------------------------------------
+  post_tasks:
+    - name: Display completion summary
+      ansible.builtin.debug:
+        msg: |
+          ============================================================
+                       Configuration Complete!
+          ============================================================
+
+            Services Available (Local Network):
+            -----------------------------------------------------------
+            - Grafana:        http://{{ pi_ip }}:{{ grafana_port }}
+            - Prometheus:     http://{{ pi_ip }}:{{ prometheus_port }}
+            - Home Assistant: http://{{ pi_ip }}:{{ homeassistant_port }}
+            - Portainer:      https://{{ pi_ip }}:{{ portainer_port }}
+            - cAdvisor:       http://{{ pi_ip }}:{{ cadvisor_port }}
+
+            With MikroTik DNS configured, also accessible via:
+            -----------------------------------------------------------
+            - http://grafana.home:{{ grafana_port }}
+            - http://homeassistant.home:{{ homeassistant_port }}
+            - http://prometheus.home:{{ prometheus_port }}
+
+            Remote Access (via Tailscale):
+            -----------------------------------------------------------
+            - Connect to Tailscale on your device
+            - Access services using Tailscale IP or MagicDNS
+
+          ============================================================
+      tags:
+        - always
+
+    - name: Log successful Ansible run
+      ansible.builtin.copy:
+        content: |
+          Last successful Ansible run: {{ ansible_date_time.iso8601 }}
+          Hostname: {{ ansible_hostname }}
+          Playbook: site.yml
+          Git commit: {{ lookup('pipe', 'cd ' + config_repo_dir + ' && git rev-parse --short HEAD 2>/dev/null || echo "unknown"') }}
+        dest: "{{ pi_home }}/.ansible-last-run"
+        owner: "{{ pi_user }}"
+        group: "{{ pi_user }}"
+        mode: '0644'
+      tags:
+        - always
+
+    - name: Display any warnings or manual steps needed
+      ansible.builtin.debug:
+        msg: |
+          Manual Steps Required:
+
+          1. If Tailscale isn't connected, run:
+             sudo tailscale up --advertise-routes=192.168.88.0/24 --accept-routes
+
+          2. Approve subnet routes in Tailscale admin:
+             https://login.tailscale.com/admin/machines
+
+          3. Change default Grafana password:
+             http://{{ pi_ip }}:{{ grafana_port }}
+             Default: admin / {{ grafana_admin_password }}
+
+          4. Configure MikroTik DNS entries (if not already done):
+             /ip dns static
+             add name=homeassistant.home address={{ pi_ip }}
+             add name=grafana.home address={{ pi_ip }}
+             add name=prometheus.home address={{ pi_ip }}
+             add name=keeper.home address={{ pi_ip }}
+      tags:
+        - always

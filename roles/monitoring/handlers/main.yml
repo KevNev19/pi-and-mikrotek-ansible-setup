@@ -1,0 +1,11 @@
+---
+# =============================================================================
+# Monitoring Role - Handlers
+# =============================================================================
+
+- name: Restart monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ network_monitoring_dir }}"
+    state: present
+    recreate: always
+  become_user: "{{ pi_user }}"

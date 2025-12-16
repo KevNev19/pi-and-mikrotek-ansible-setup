@@ -1,0 +1,99 @@
+---
+# =============================================================================
+# Tailscale Role - VPN for Remote Access
+# =============================================================================
+
+- name: Check if Tailscale is installed
+  ansible.builtin.command: tailscale --version
+  register: tailscale_installed
+  ignore_errors: yes
+  changed_when: false
+  tags:
+    - tailscale
+
+- name: Install Tailscale
+  when: tailscale_installed.rc != 0
+  block:
+    - name: Download Tailscale install script
+      ansible.builtin.get_url:
+        url: https://tailscale.com/install.sh
+        dest: /tmp/tailscale-install.sh
+        mode: '0755'
+
+    - name: Run Tailscale install script
+      ansible.builtin.command: /tmp/tailscale-install.sh
+      args:
+        creates: /usr/bin/tailscale
+
+    - name: Remove Tailscale install script
+      ansible.builtin.file:
+        path: /tmp/tailscale-install.sh
+        state: absent
+  tags:
+    - tailscale
+
+- name: Ensure Tailscale service is enabled
+  ansible.builtin.systemd:
+    name: tailscaled
+    state: started
+    enabled: yes
+  tags:
+    - tailscale
+
+- name: Check Tailscale status
+  ansible.builtin.command: tailscale status --json
+  register: tailscale_status
+  ignore_errors: yes
+  changed_when: false
+  tags:
+    - tailscale
+
+- name: Parse Tailscale status
+  ansible.builtin.set_fact:
+    tailscale_connected: "{{ (tailscale_status.stdout | from_json).BackendState == 'Running' }}"
+  when: tailscale_status.rc == 0
+  ignore_errors: yes
+  tags:
+    - tailscale
+
+- name: Connect Tailscale with auth key (if provided)
+  ansible.builtin.command: >
+    tailscale up
+    --authkey={{ tailscale_authkey }}
+    --advertise-routes={{ tailscale_advertise_routes }}
+    --accept-routes
+  when:
+    - tailscale_authkey | length > 0
+    - not tailscale_connected | default(false)
+  tags:
+    - tailscale
+
+- name: Display Tailscale connection instructions
+  ansible.builtin.debug:
+    msg: |
+      Tailscale is installed but may not be connected.
+
+      To connect manually, run:
+        sudo tailscale up --advertise-routes={{ tailscale_advertise_routes }} --accept-routes
+
+      Then approve the routes in the Tailscale admin console:
+        https://login.tailscale.com/admin/machines
+  when:
+    - tailscale_authkey | length == 0
+    - not tailscale_connected | default(false)
+  tags:
+    - tailscale
+
+- name: Get Tailscale IP
+  ansible.builtin.command: tailscale ip -4
+  register: tailscale_ip
+  changed_when: false
+  ignore_errors: yes
+  tags:
+    - tailscale
+
+- name: Display Tailscale IP
+  ansible.builtin.debug:
+    msg: "Tailscale IP: {{ tailscale_ip.stdout | default('Not connected') }}"
+  tags:
+    - tailscale

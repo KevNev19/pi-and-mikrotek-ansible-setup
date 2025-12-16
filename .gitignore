@@ -1,0 +1,22 @@
+# Ansible
+*.retry
+*.pyc
+__pycache__/
+
+# Secrets (if using ansible-vault)
+vault_password
+.vault_pass
+
+# Editor files
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

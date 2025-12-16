@@ -1,0 +1,17 @@
+---
+# =============================================================================
+# Ansible Galaxy Requirements
+# =============================================================================
+
+collections:
+  # Docker collection for managing containers
+  - name: community.docker
+    version: ">=3.4.0"
+
+  # General utilities
+  - name: community.general
+    version: ">=8.0.0"
+
+  # POSIX utilities (sysctl, etc.)
+  - name: ansible.posix
+    version: ">=1.5.0"

@@ -1,0 +1,18 @@
+---
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: /usr/bin/python3
+  vars:
+    # Pi User Configuration
+    pi_user: pi
+    pi_home: /home/pi
+
+    # Network Configuration
+    pi_ip: 192.168.88.253
+    mikrotik_ip: 192.168.88.1
+
+    # Directory Paths
+    network_monitoring_dir: /home/pi/network-monitoring
+    config_repo_dir: /home/pi/pi-and-mikrotek-ansible-setup

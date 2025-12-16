@@ -1,0 +1,120 @@
+---
+# =============================================================================
+# Monitoring Role - Prometheus, Grafana, and Supporting Services
+# =============================================================================
+
+- name: Create network-monitoring directory
+  ansible.builtin.file:
+    path: "{{ network_monitoring_dir }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  tags:
+    - monitoring
+
+- name: Create Grafana provisioning directories
+  ansible.builtin.file:
+    path: "{{ network_monitoring_dir }}/grafana/provisioning/{{ item }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  loop:
+    - datasources
+    - dashboards
+  tags:
+    - monitoring
+    - grafana
+
+- name: Copy docker-compose.yml
+  ansible.builtin.copy:
+    src: docker-compose.yml
+    dest: "{{ network_monitoring_dir }}/docker-compose.yml"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+  notify: Restart monitoring stack
+  tags:
+    - monitoring
+
+- name: Copy prometheus.yml
+  ansible.builtin.copy:
+    src: prometheus.yml
+    dest: "{{ network_monitoring_dir }}/prometheus.yml"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+  notify: Restart monitoring stack
+  tags:
+    - monitoring
+    - prometheus
+
+- name: Template Grafana datasources configuration
+  ansible.builtin.template:
+    src: grafana-datasources.yml.j2
+    dest: "{{ network_monitoring_dir }}/grafana/provisioning/datasources/prometheus.yml"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+  notify: Restart monitoring stack
+  tags:
+    - monitoring
+    - grafana
+
+- name: Create Grafana dashboards configuration
+  ansible.builtin.copy:
+    dest: "{{ network_monitoring_dir }}/grafana/provisioning/dashboards/dashboards.yml"
+    content: |
+      apiVersion: 1
+
+      providers:
+        - name: 'Default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          updateIntervalSeconds: 10
+          allowUiUpdates: true
+          options:
+            path: /etc/grafana/provisioning/dashboards
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+  tags:
+    - monitoring
+    - grafana
+
+- name: Start Docker Compose monitoring stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ network_monitoring_dir }}"
+    state: present
+  become_user: "{{ pi_user }}"
+  tags:
+    - monitoring
+
+- name: Wait for Grafana to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ grafana_port }}/api/health"
+    method: GET
+    status_code: 200
+  register: grafana_health
+  until: grafana_health.status == 200
+  retries: 30
+  delay: 5
+  tags:
+    - monitoring
+    - grafana
+
+- name: Wait for Prometheus to be ready
+  ansible.builtin.uri:
+    url: "http://localhost:{{ prometheus_port }}/-/healthy"
+    method: GET
+    status_code: 200
+  register: prometheus_health
+  until: prometheus_health.status == 200
+  retries: 30
+  delay: 5
+  tags:
+    - monitoring
+    - prometheus

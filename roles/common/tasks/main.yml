@@ -1,0 +1,207 @@
+---
+# =============================================================================
+# Common Role - Base System Configuration
+# =============================================================================
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ pi_hostname }}"
+  tags:
+    - hostname
+    - common
+
+- name: Update /etc/hosts with hostname
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.1\.1'
+    line: "127.0.1.1\t{{ pi_hostname }}"
+    state: present
+  tags:
+    - hostname
+    - common
+
+- name: Set timezone
+  community.general.timezone:
+    name: "{{ pi_timezone }}"
+  tags:
+    - timezone
+    - common
+
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  tags:
+    - packages
+    - common
+
+- name: Upgrade all packages
+  ansible.builtin.apt:
+    upgrade: safe
+  tags:
+    - packages
+    - common
+  when: ansible_facts['pkg_mgr'] == 'apt'
+
+- name: Install essential packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - vim
+      - htop
+      - iotop
+      - git
+      - python3-pip
+      - python3-venv
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - jq
+      - tree
+      - ncdu
+      - tmux
+      - rsync
+      - unzip
+      - net-tools
+      - dnsutils
+      - iputils-ping
+    state: present
+  tags:
+    - packages
+    - common
+
+- name: Install unattended-upgrades for automatic security updates
+  ansible.builtin.apt:
+    name:
+      - unattended-upgrades
+      - apt-listchanges
+    state: present
+  tags:
+    - security
+    - common
+
+- name: Configure unattended-upgrades - auto updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+      APT::Periodic::AutocleanInterval "7";
+      APT::Periodic::Download-Upgradeable-Packages "1";
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - security
+    - common
+
+- name: Configure unattended-upgrades - upgrade settings
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades
+    content: |
+      Unattended-Upgrade::Origins-Pattern {
+          "origin=Debian,codename=${distro_codename},label=Debian-Security";
+          "origin=Raspbian,codename=${distro_codename},label=Raspbian";
+      };
+      Unattended-Upgrade::Package-Blacklist {
+      };
+      Unattended-Upgrade::AutoFixInterruptedDpkg "true";
+      Unattended-Upgrade::MinimalSteps "true";
+      Unattended-Upgrade::Remove-Unused-Dependencies "true";
+      Unattended-Upgrade::Automatic-Reboot "false";
+    mode: '0644'
+    owner: root
+    group: root
+  tags:
+    - security
+    - common
+
+- name: Create scripts directory
+  ansible.builtin.file:
+    path: "{{ scripts_dir }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  tags:
+    - directories
+    - common
+
+- name: Create backup directory
+  ansible.builtin.file:
+    path: "{{ backup_dir }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  tags:
+    - directories
+    - common
+
+- name: Create ansible log directory
+  ansible.builtin.file:
+    path: "{{ ansible_log_dir }}"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  tags:
+    - directories
+    - common
+
+- name: Configure vim as default editor
+  ansible.builtin.lineinfile:
+    path: "{{ pi_home }}/.bashrc"
+    line: "export EDITOR=vim"
+    state: present
+    create: yes
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+  tags:
+    - shell
+    - common
+
+- name: Add useful bash aliases
+  ansible.builtin.blockinfile:
+    path: "{{ pi_home }}/.bashrc"
+    block: |
+      # Custom aliases
+      alias ll='ls -la'
+      alias dc='docker compose'
+      alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+      alias dlogs='docker compose logs -f'
+      alias ansible-sync='sudo systemctl start ansible-boot-sync.service'
+      alias sync-status='sudo systemctl status ansible-boot-sync.service'
+      alias sync-logs='sudo journalctl -u ansible-boot-sync.service -f'
+    marker: "# {mark} ANSIBLE MANAGED ALIASES"
+    create: yes
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+  tags:
+    - shell
+    - common
+
+- name: Set swappiness to reduce SD card wear
+  ansible.posix.sysctl:
+    name: vm.swappiness
+    value: '10'
+    state: present
+    reload: yes
+  tags:
+    - performance
+    - common
+
+- name: Enable IP forwarding (for Tailscale subnet routing)
+  ansible.posix.sysctl:
+    name: "{{ item }}"
+    value: '1'
+    state: present
+    reload: yes
+  loop:
+    - net.ipv4.ip_forward
+    - net.ipv6.conf.all.forwarding
+  tags:
+    - network
+    - common
