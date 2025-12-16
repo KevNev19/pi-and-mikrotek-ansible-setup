@@ -1,0 +1,33 @@
+# =============================================================================
+# Remote Inventory - For testing from development machine
+# =============================================================================
+# Use this inventory when running Ansible from your Windows machine or
+# devcontainer to configure the actual Pi remotely.
+#
+# Usage:
+#   ansible-playbook playbooks/site.yml -i inventory/remote.yml
+#
+# =============================================================================
+
+all:
+  hosts:
+    keeper:
+      ansible_host: 192.168.88.253
+      ansible_user: pi
+      ansible_connection: ssh
+      ansible_python_interpreter: /usr/bin/python3
+      # Uses SSH key from ~/.ssh/ (mounted in devcontainer)
+      # ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+  vars:
+    # Pi User Configuration
+    pi_user: pi
+    pi_home: /home/pi
+
+    # Network Configuration
+    pi_ip: 192.168.88.253
+    mikrotik_ip: 192.168.88.1
+
+    # Directory Paths
+    network_monitoring_dir: /home/pi/network-monitoring
+    config_repo_dir: /home/pi/pi-and-mikrotek-ansible-setup

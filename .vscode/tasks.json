@@ -1,0 +1,163 @@
+{
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "ANSIBLE_CONFIG": "${workspaceFolder}/ansible.cfg"
+        }
+    },
+    "tasks": [
+        {
+            "label": "Ansible: Syntax Check",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "--syntax-check"
+            ],
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Lint All",
+            "type": "shell",
+            "command": "ansible-lint",
+            "args": [
+                "."
+            ],
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Dry Run (Test Inventory - WSL)",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "-i",
+                "inventory/test.yml",
+                "--check",
+                "--diff"
+            ],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Dry Run - Remote Pi (SSH Required)",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "-i",
+                "inventory/remote.yml",
+                "--check",
+                "--diff"
+            ],
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Run Full Playbook - Remote Pi (SSH Required)",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "-i",
+                "inventory/remote.yml",
+                "-v"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Install Galaxy Collections",
+            "type": "shell",
+            "command": "ansible-galaxy",
+            "args": [
+                "collection",
+                "install",
+                "-r",
+                "requirements.yml",
+                "--force"
+            ],
+            "group": "build",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: List Tags",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "--list-tags"
+            ],
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        },
+        {
+            "label": "Ansible: Run Single Role (Test)",
+            "type": "shell",
+            "command": "ansible-playbook",
+            "args": [
+                "playbooks/site.yml",
+                "-i",
+                "inventory/test.yml",
+                "--tags",
+                "${input:roleName}",
+                "--check"
+            ],
+            "group": "test",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "roleName",
+            "type": "pickString",
+            "description": "Select role to test",
+            "options": [
+                "common",
+                "docker",
+                "monitoring",
+                "homeassistant",
+                "tailscale",
+                "boot-sync"
+            ],
+            "default": "common"
+        }
+    ]
+}

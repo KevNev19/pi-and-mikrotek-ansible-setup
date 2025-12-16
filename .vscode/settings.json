@@ -1,0 +1,52 @@
+{
+    "ansible.ansibleLint.enabled": true,
+    "ansible.validation.enabled": true,
+    "ansible.validation.lint.enabled": true,
+    "files.associations": {
+        "*.yml": "ansible",
+        "*.yaml": "ansible",
+        "**/playbooks/*.yml": "ansible",
+        "**/roles/**/*.yml": "ansible",
+        "**/group_vars/*.yml": "ansible",
+        "**/inventory/*.yml": "ansible",
+        "**/handlers/*.yml": "ansible",
+        "**/tasks/*.yml": "ansible",
+        "**/defaults/*.yml": "ansible",
+        "**/vars/*.yml": "ansible"
+    },
+    "[ansible]": {
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.autoIndent": "advanced",
+        "editor.quickSuggestions": {
+            "comments": true,
+            "other": true,
+            "strings": true
+        }
+    },
+    "yaml.schemas": {
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/playbook": "**/playbooks/*.yml",
+        "https://raw.githubusercontent.com/ansible/ansible-lint/main/src/ansiblelint/schemas/ansible.json#/$defs/tasks": "**/tasks/*.yml"
+    },
+    "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
+    },
+    "cSpell.words": [
+        "mikrotik"
+    ],
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.profiles.windows": {
+        "Ubuntu (WSL)": {
+            "path": "wsl.exe",
+            "args": [
+                "-d",
+                "Ubuntu"
+            ],
+            "icon": "terminal-linux"
+        },
+        "PowerShell": {
+            "source": "PowerShell",
+            "icon": "terminal-powershell"
+        }
+    }
+}

@@ -1,0 +1,26 @@
+# .ansible-lint configuration
+# https://ansible.readthedocs.io/projects/lint/configuring/
+
+profile: production
+
+# Exclude paths from linting
+exclude_paths:
+  - .git/
+  - .devcontainer/
+  - .vscode/
+
+# Enable specific rule categories
+enable_list:
+  - fqcn-builtins # Use fully qualified collection names
+  - no-prompting # Disallow interactive prompts
+
+# Skip specific rules if needed
+skip_list:
+  - yaml[line-length] # Allow longer lines in some cases
+
+# Warn on these rules instead of failing
+warn_list:
+  - experimental
+
+# Offline mode (don't download schemas)
+offline: false

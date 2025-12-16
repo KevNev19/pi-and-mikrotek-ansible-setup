@@ -6,13 +6,23 @@ __pycache__/
 # Secrets (if using ansible-vault)
 vault_password
 .vault_pass
+**/vault.yml
+
+# Python virtual environment
+.venv/
+venv/
 
 # Editor files
 *.swp
 *.swo
 *~
 .idea/
-.vscode/
+
+# VS Code - track settings but ignore user-specific files
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/tasks.json
 
 # OS files
 .DS_Store
@@ -20,3 +30,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Ansible collections (installed via galaxy)
+collections/

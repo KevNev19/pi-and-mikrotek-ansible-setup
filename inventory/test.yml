@@ -1,0 +1,85 @@
+# =============================================================================
+# Test Inventory - For validation in WSL (no Pi required)
+# =============================================================================
+# Use this inventory for syntax checking, linting, and dry runs inside WSL.
+# This targets localhost but mimics the Pi configuration.
+#
+# Usage (from WSL terminal):
+#   ansible-playbook playbooks/site.yml -i inventory/test.yml --check
+#   ansible-playbook playbooks/site.yml -i inventory/test.yml --syntax-check
+#
+# NOTE: This is for VALIDATION ONLY. Some tasks will fail in check mode
+# because they expect a real Raspberry Pi environment.
+# =============================================================================
+
+all:
+  hosts:
+    localhost:
+      ansible_connection: local
+      ansible_python_interpreter: "{{ ansible_playbook_python }}"
+
+  vars:
+    # ==========================================================================
+    # System Configuration (test values)
+    # ==========================================================================
+    pi_hostname: keeper
+    pi_timezone: Europe/London
+    pi_locale: en_GB.UTF-8
+
+    # ==========================================================================
+    # Network Configuration (test values - won't actually be applied)
+    # ==========================================================================
+    pi_ip: 192.168.88.253
+    mikrotik_ip: 192.168.88.1
+    network_subnet: 192.168.88.0/24
+
+    # ==========================================================================
+    # User Configuration (uses current WSL user for testing)
+    # ==========================================================================
+    pi_user: "{{ lookup('env', 'USER') | default('pi', true) }}"
+    pi_home: "{{ lookup('env', 'HOME') | default('/home/pi', true) }}"
+
+    # ==========================================================================
+    # Directory Paths (WSL paths for testing)
+    # ==========================================================================
+    network_monitoring_dir: "{{ lookup('env', 'HOME') }}/network-monitoring"
+    config_repo_dir: "{{ playbook_dir | dirname }}"
+    scripts_dir: "{{ lookup('env', 'HOME') }}/scripts"
+    backup_dir: "{{ lookup('env', 'HOME') }}/backups"
+    ansible_log_dir: /var/log/ansible
+
+    # ==========================================================================
+    # Port Configuration
+    # ==========================================================================
+    prometheus_port: 9090
+    grafana_port: 3000
+    homeassistant_port: 8123
+    portainer_port: 9443
+    node_exporter_port: 9100
+    snmp_exporter_port: 9116
+    cadvisor_port: 8080
+
+    # ==========================================================================
+    # Grafana (test password)
+    # ==========================================================================
+    grafana_admin_user: admin
+    grafana_admin_password: "TestPassword123!"
+
+    # ==========================================================================
+    # Tailscale (disabled for testing)
+    # ==========================================================================
+    tailscale_authkey: ""
+    tailscale_advertise_routes: "192.168.88.0/24"
+    tailscale_accept_routes: true
+
+    # ==========================================================================
+    # Docker Configuration
+    # ==========================================================================
+    docker_log_max_size: "10m"
+    docker_log_max_file: "3"
+
+    # ==========================================================================
+    # Boot Sync (disabled for testing)
+    # ==========================================================================
+    boot_sync_timer_enabled: false
+    boot_sync_log: /var/log/ansible-boot-sync.log

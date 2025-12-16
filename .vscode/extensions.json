@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "redhat.ansible",
+        "redhat.vscode-yaml",
+        "ms-python.python",
+        "ms-vscode-remote.remote-containers",
+        "streetsidesoftware.code-spell-checker",
+        "ms-azuretools.vscode-docker"
+    ]
+}

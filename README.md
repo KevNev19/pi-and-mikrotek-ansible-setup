@@ -152,6 +152,16 @@ sudo ansible-playbook playbooks/site.yml --check
 2. Commit and push to GitHub
 3. On Pi: `ansible-sync` or wait for next boot
 
+## Development Setup
+
+For local development on **Windows** or **macOS**, see [DEVELOPMENT_SETUP.md](DEVELOPMENT_SETUP.md).
+
+This covers:
+- WSL setup for Windows users
+- Python virtual environment setup for macOS
+- VS Code integration
+- Testing playbooks locally without a Pi
+
 ## Repository Structure
 
 ```

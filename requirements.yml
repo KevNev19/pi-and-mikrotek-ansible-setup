@@ -8,9 +8,9 @@ collections:
   - name: community.docker
     version: ">=3.4.0"
 
-  # General utilities
+  # General utilities (pinned to 11.x - version 12+ removed yaml callback plugin)
   - name: community.general
-    version: ">=8.0.0"
+    version: ">=11.0.0,<12.0.0"
 
   # POSIX utilities (sysctl, etc.)
   - name: ansible.posix

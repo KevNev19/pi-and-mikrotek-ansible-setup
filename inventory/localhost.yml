@@ -15,4 +15,4 @@ all:
 
     # Directory Paths
     network_monitoring_dir: /home/pi/network-monitoring
-    config_repo_dir: /home/pi/pi-and-mikrotek-ansible-setup
+    config_repo_dir: /home/pi/pi-and-mikrotik-ansible-setup
