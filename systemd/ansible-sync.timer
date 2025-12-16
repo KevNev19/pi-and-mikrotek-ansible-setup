@@ -1,0 +1,19 @@
+[Unit]
+Description=Run Ansible Sync Periodically
+Documentation=https://github.com/KevNev19/pi-and-mikrotek-ansible-setup
+
+[Timer]
+# Run 5 minutes after boot
+OnBootSec=5min
+
+# Then every 6 hours
+OnUnitActiveSec=6h
+
+# Add some randomness to prevent thundering herd
+RandomizedDelaySec=30min
+
+# Persist timer across reboots
+Persistent=true
+
+[Install]
+WantedBy=timers.target

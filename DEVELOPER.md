@@ -68,11 +68,23 @@ This document covers how to extend, modify, and maintain the Ansible configurati
 │   │   │   └── prometheus.yml
 │   │   └── templates/
 │   │       └── grafana-datasources.yml.j2
-│   ├── homeassistant/          # Home Assistant container
+│   ├── homeassistant/          # Home Assistant + HACS
+│   │   ├── tasks/main.yml
+│   │   ├── handlers/main.yml
+│   │   └── templates/
+│   │       ├── configuration.yaml.j2
+│   │       └── secrets.yaml.j2
+│   ├── tailscale/              # Tailscale VPN
 │   │   └── tasks/main.yml
-│   └── tailscale/              # Tailscale VPN
-│       └── tasks/main.yml
+│   └── boot-sync/              # Systemd service management
+│       ├── tasks/main.yml
+│       └── handlers/main.yml
+├── systemd/                    # Systemd unit files
+│   ├── ansible-boot-sync.service
+│   ├── ansible-sync.service
+│   └── ansible-sync.timer
 └── scripts/
+    ├── bootstrap.sh            # Initial Pi setup script
     └── boot-sync.sh            # Boot automation script
 ```
 

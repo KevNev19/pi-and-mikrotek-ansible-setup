@@ -118,3 +118,9 @@ backup_dir: "{{ pi_home }}/backups"
 # -----------------------------------------------------------------------------
 ansible_log_dir: /var/log/ansible
 boot_sync_log: /var/log/ansible-boot-sync.log
+
+# -----------------------------------------------------------------------------
+# Boot Sync Configuration
+# -----------------------------------------------------------------------------
+# Enable periodic sync timer (every 6 hours in addition to boot sync)
+boot_sync_timer_enabled: false

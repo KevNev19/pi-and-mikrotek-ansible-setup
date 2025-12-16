@@ -1,0 +1,83 @@
+---
+# =============================================================================
+# Boot Sync Role - Systemd Service Management
+# =============================================================================
+
+- name: Copy boot-sync systemd service
+  ansible.builtin.copy:
+    src: "{{ config_repo_dir }}/systemd/ansible-boot-sync.service"
+    dest: /etc/systemd/system/ansible-boot-sync.service
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: yes
+  notify: Reload systemd
+  tags:
+    - boot-sync
+
+- name: Copy periodic sync service
+  ansible.builtin.copy:
+    src: "{{ config_repo_dir }}/systemd/ansible-sync.service"
+    dest: /etc/systemd/system/ansible-sync.service
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: yes
+  notify: Reload systemd
+  tags:
+    - boot-sync
+
+- name: Copy periodic sync timer
+  ansible.builtin.copy:
+    src: "{{ config_repo_dir }}/systemd/ansible-sync.timer"
+    dest: /etc/systemd/system/ansible-sync.timer
+    owner: root
+    group: root
+    mode: '0644'
+    remote_src: yes
+  notify: Reload systemd
+  tags:
+    - boot-sync
+
+- name: Ensure boot-sync log file exists
+  ansible.builtin.file:
+    path: "{{ boot_sync_log }}"
+    state: touch
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+    modification_time: preserve
+    access_time: preserve
+  tags:
+    - boot-sync
+
+- name: Enable ansible-boot-sync service
+  ansible.builtin.systemd:
+    name: ansible-boot-sync.service
+    enabled: yes
+    daemon_reload: yes
+  tags:
+    - boot-sync
+
+- name: Enable periodic sync timer (optional)
+  ansible.builtin.systemd:
+    name: ansible-sync.timer
+    enabled: "{{ boot_sync_timer_enabled | default(false) }}"
+    state: "{{ 'started' if boot_sync_timer_enabled | default(false) else 'stopped' }}"
+    daemon_reload: yes
+  tags:
+    - boot-sync
+
+- name: Make boot-sync script executable
+  ansible.builtin.file:
+    path: "{{ config_repo_dir }}/scripts/boot-sync.sh"
+    mode: '0755'
+  tags:
+    - boot-sync
+
+- name: Make bootstrap script executable
+  ansible.builtin.file:
+    path: "{{ config_repo_dir }}/scripts/bootstrap.sh"
+    mode: '0755'
+  tags:
+    - boot-sync

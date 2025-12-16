@@ -1,0 +1,12 @@
+[Unit]
+Description=Ansible Periodic Sync
+Documentation=https://github.com/KevNev19/pi-and-mikrotek-ansible-setup
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/home/pi/pi-and-mikrotek-ansible-setup/scripts/boot-sync.sh
+TimeoutStartSec=900
+Environment="HOME=/root"
+Environment="ANSIBLE_FORCE_COLOR=true"
