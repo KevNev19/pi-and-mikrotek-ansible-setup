@@ -67,6 +67,7 @@
       - net-tools
       - dnsutils
       - iputils-ping
+      - systemd-resolved
     state: present
   tags:
     - packages
