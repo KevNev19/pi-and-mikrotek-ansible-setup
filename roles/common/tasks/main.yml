@@ -73,6 +73,16 @@
     - packages
     - common
 
+- name: Ensure systemd-resolved is enabled and started
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: started
+    enabled: yes
+  tags:
+    - packages
+    - common
+    - common
+
 - name: Install unattended-upgrades for automatic security updates
   ansible.builtin.apt:
     name:
