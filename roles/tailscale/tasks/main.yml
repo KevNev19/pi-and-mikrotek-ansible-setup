@@ -67,6 +67,15 @@
   tags:
     - tailscale
 
+- name: Enforce Tailscale Client Settings (when connected)
+  ansible.builtin.command: >
+    tailscale set
+    --advertise-routes={{ tailscale_advertise_routes }}
+    --accept-routes={{ tailscale_accept_routes | default(true) }}
+  when: tailscale_connected | default(false)
+  tags:
+    - tailscale
+
 - name: Display Tailscale connection instructions
   ansible.builtin.debug:
     msg: |
