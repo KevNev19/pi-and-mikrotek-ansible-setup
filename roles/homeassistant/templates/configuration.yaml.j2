@@ -1,0 +1,73 @@
+# Home Assistant Configuration
+# Managed by Ansible - Initial setup only
+# Feel free to modify this file after initial deployment
+
+homeassistant:
+  name: {{ homeassistant_name | default('Home') }}
+  latitude: {{ homeassistant_latitude | default('51.5074') }}
+  longitude: {{ homeassistant_longitude | default('-0.1278') }}
+  elevation: {{ homeassistant_elevation | default('11') }}
+  unit_system: {{ homeassistant_unit_system | default('metric') }}
+  currency: {{ homeassistant_currency | default('GBP') }}
+  country: {{ homeassistant_country | default('GB') }}
+  time_zone: {{ pi_timezone }}
+
+# Configure logging
+logger:
+  default: info
+  logs:
+    homeassistant.components.http: warning
+
+# HTTP configuration
+http:
+  server_port: {{ homeassistant_port }}
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
+
+# Enable frontend
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Enable configuration UI
+config:
+
+# Enable mobile app support
+mobile_app:
+
+# System health
+system_health:
+
+# Enable the official Home Assistant iOS and Android apps
+default_config:
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+# Automations
+automation: !include automations.yaml
+
+# Scripts
+script: !include scripts.yaml
+
+# Scenes
+scene: !include scenes.yaml
+
+# Secrets (for sensitive data)
+# Use: !secret secret_name
+# Define secrets in secrets.yaml
+
+{% if homeassistant_prometheus_enabled | default(true) %}
+# Prometheus metrics endpoint
+prometheus:
+  namespace: homeassistant
+{% endif %}
+
+{% if homeassistant_mikrotik_enabled | default(true) %}
+# MikroTik device tracker (optional - configure via UI)
+# device_tracker:
+#   - platform: mikrotik
+#     host: {{ mikrotik_ip }}
+#     username: !secret mikrotik_username
+#     password: !secret mikrotik_password
+{% endif %}

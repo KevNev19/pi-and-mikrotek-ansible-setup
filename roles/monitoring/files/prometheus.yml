@@ -68,3 +68,15 @@ scrape_configs:
       - targets: ['snmp-exporter:9116']
         labels:
           instance: 'snmp-exporter'
+
+  # ---------------------------------------------------------------------------
+  # Home Assistant Metrics
+  # ---------------------------------------------------------------------------
+  - job_name: 'homeassistant'
+    scrape_interval: 60s
+    metrics_path: /api/prometheus
+    bearer_token_file: /etc/prometheus/ha_token
+    static_configs:
+      - targets: ['192.168.88.253:8123']
+        labels:
+          instance: 'homeassistant'

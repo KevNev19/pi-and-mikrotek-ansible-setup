@@ -65,6 +65,24 @@ cadvisor_port: 8080
 homeassistant_port: 8123
 homeassistant_config_dir: "{{ network_monitoring_dir }}/homeassistant"
 
+# Home Assistant instance settings
+homeassistant_name: "Home"
+homeassistant_latitude: "51.5074"      # London default - change to your location
+homeassistant_longitude: "-0.1278"     # London default - change to your location
+homeassistant_elevation: "11"          # Meters above sea level
+homeassistant_unit_system: "metric"    # metric or imperial
+homeassistant_currency: "GBP"
+homeassistant_country: "GB"
+
+# HACS (Home Assistant Community Store)
+homeassistant_hacs_enabled: true
+
+# Enable Prometheus metrics endpoint in Home Assistant
+homeassistant_prometheus_enabled: true
+
+# Enable MikroTik integration hints in config
+homeassistant_mikrotik_enabled: true
+
 # -----------------------------------------------------------------------------
 # Portainer Configuration
 # -----------------------------------------------------------------------------

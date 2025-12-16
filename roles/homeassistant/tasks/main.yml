@@ -1,17 +1,21 @@
 ---
 # =============================================================================
-# Home Assistant Role - Smart Home Control
+# Home Assistant Role - Smart Home Control with HACS
 # =============================================================================
-# Note: Home Assistant is deployed as part of the monitoring docker-compose stack
-# This role handles any additional configuration if needed
 
-- name: Create Home Assistant config directory
+- name: Create Home Assistant directories
   ansible.builtin.file:
-    path: "{{ homeassistant_config_dir }}"
+    path: "{{ item }}"
     state: directory
     owner: "{{ pi_user }}"
     group: "{{ pi_user }}"
     mode: '0755'
+  loop:
+    - "{{ homeassistant_config_dir }}"
+    - "{{ homeassistant_config_dir }}/custom_components"
+    - "{{ homeassistant_config_dir }}/www"
+    - "{{ homeassistant_config_dir }}/blueprints/automation"
+    - "{{ homeassistant_config_dir }}/blueprints/script"
   tags:
     - homeassistant
 
@@ -22,16 +26,142 @@
   tags:
     - homeassistant
 
+- name: Create initial Home Assistant configuration
+  ansible.builtin.template:
+    src: configuration.yaml.j2
+    dest: "{{ homeassistant_config_dir }}/configuration.yaml"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+  when: not ha_config.stat.exists
+  tags:
+    - homeassistant
+
+- name: Create Home Assistant secrets file
+  ansible.builtin.template:
+    src: secrets.yaml.j2
+    dest: "{{ homeassistant_config_dir }}/secrets.yaml"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0600'
+  when: not ha_config.stat.exists
+  tags:
+    - homeassistant
+
+- name: Create automations file
+  ansible.builtin.copy:
+    dest: "{{ homeassistant_config_dir }}/automations.yaml"
+    content: "[]"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+    force: no
+  tags:
+    - homeassistant
+
+- name: Create scripts file
+  ansible.builtin.copy:
+    dest: "{{ homeassistant_config_dir }}/scripts.yaml"
+    content: ""
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+    force: no
+  tags:
+    - homeassistant
+
+- name: Create scenes file
+  ansible.builtin.copy:
+    dest: "{{ homeassistant_config_dir }}/scenes.yaml"
+    content: "[]"
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0644'
+    force: no
+  tags:
+    - homeassistant
+
+# ---------------------------------------------------------------------------
+# HACS Installation
+# ---------------------------------------------------------------------------
+- name: Check if HACS is installed
+  ansible.builtin.stat:
+    path: "{{ homeassistant_config_dir }}/custom_components/hacs"
+  register: hacs_installed
+  tags:
+    - homeassistant
+    - hacs
+
+- name: Download HACS
+  ansible.builtin.get_url:
+    url: https://github.com/hacs/integration/releases/latest/download/hacs.zip
+    dest: /tmp/hacs.zip
+    mode: '0644'
+  when:
+    - not hacs_installed.stat.exists
+    - homeassistant_hacs_enabled | default(true)
+  tags:
+    - homeassistant
+    - hacs
+
+- name: Create HACS directory
+  ansible.builtin.file:
+    path: "{{ homeassistant_config_dir }}/custom_components/hacs"
+    state: directory
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+    mode: '0755'
+  when:
+    - not hacs_installed.stat.exists
+    - homeassistant_hacs_enabled | default(true)
+  tags:
+    - homeassistant
+    - hacs
+
+- name: Extract HACS
+  ansible.builtin.unarchive:
+    src: /tmp/hacs.zip
+    dest: "{{ homeassistant_config_dir }}/custom_components/hacs"
+    remote_src: yes
+    owner: "{{ pi_user }}"
+    group: "{{ pi_user }}"
+  when:
+    - not hacs_installed.stat.exists
+    - homeassistant_hacs_enabled | default(true)
+  notify: Restart Home Assistant
+  tags:
+    - homeassistant
+    - hacs
+
+- name: Clean up HACS zip
+  ansible.builtin.file:
+    path: /tmp/hacs.zip
+    state: absent
+  when: homeassistant_hacs_enabled | default(true)
+  tags:
+    - homeassistant
+    - hacs
+
+# ---------------------------------------------------------------------------
+# Status Display
+# ---------------------------------------------------------------------------
 - name: Display Home Assistant status
   ansible.builtin.debug:
     msg: |
       Home Assistant Configuration:
-      - Config directory: {{ homeassistant_config_dir }}
-      - Port: {{ homeassistant_port }}
-      - Access URL: http://{{ pi_ip }}:{{ homeassistant_port }}
-      - Configuration exists: {{ ha_config.stat.exists | default(false) }}
+      ─────────────────────────────────────────────────────
+      Config directory: {{ homeassistant_config_dir }}
+      Port: {{ homeassistant_port }}
+      Access URL: http://{{ pi_ip }}:{{ homeassistant_port }}
+      HACS installed: {{ hacs_installed.stat.exists | default(false) }}
 
-      Note: Home Assistant runs in host network mode for device discovery.
-      Initial setup will be done via the web interface on first access.
+      After Home Assistant starts:
+      1. Complete the onboarding wizard at http://{{ pi_ip }}:{{ homeassistant_port }}
+      2. Go to Settings → Devices & Services → Add Integration
+      3. Search for "HACS" and follow the setup (requires GitHub account)
+
+      HACS Setup requires:
+      - GitHub account
+      - GitHub personal access token (for initial setup)
   tags:
     - homeassistant
