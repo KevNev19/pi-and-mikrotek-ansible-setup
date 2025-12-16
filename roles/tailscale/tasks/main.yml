@@ -4,15 +4,14 @@
 # =============================================================================
 
 - name: Check if Tailscale is installed
-  ansible.builtin.command: tailscale --version
-  register: tailscale_installed
-  ignore_errors: yes
-  changed_when: false
+  ansible.builtin.stat:
+    path: /usr/bin/tailscale
+  register: tailscale_binary
   tags:
     - tailscale
 
 - name: Install Tailscale
-  when: tailscale_installed.rc != 0
+  when: not tailscale_binary.stat.exists
   block:
     - name: Download Tailscale install script
       ansible.builtin.get_url:
@@ -89,6 +88,7 @@
   register: tailscale_ip
   changed_when: false
   ignore_errors: yes
+  when: tailscale_connected | default(false)
   tags:
     - tailscale
 
