@@ -5,18 +5,101 @@ all:
       ansible_connection: local
       ansible_python_interpreter: /usr/bin/python3
   vars:
+    # =============================================================================
     # System Configuration
+    # =============================================================================
     pi_hostname: keeper
     pi_timezone: Europe/London
-    
-    # Pi User Configuration
+    pi_locale: en_GB.UTF-8
+
+    # =============================================================================
+    # Network Configuration
+    # =============================================================================
+    pi_ip: 192.168.88.253
+    mikrotik_ip: 192.168.88.1
+    network_subnet: 192.168.88.0/24
+
+    # =============================================================================
+    # User Configuration
+    # =============================================================================
     pi_user: pi
     pi_home: /home/pi
 
-    # Network Configuration
-    pi_ip: 192.168.88.253
-    mikrotik_ip: 192.168.88.1
-
+    # =============================================================================
     # Directory Paths
+    # =============================================================================
     network_monitoring_dir: /home/pi/network-monitoring
     config_repo_dir: /home/pi/pi-and-mikrotek-ansible-setup
+    scripts_dir: /home/pi/scripts
+
+    # =============================================================================
+    # Docker Configuration
+    # =============================================================================
+    docker_compose_version: "3.8"
+    docker_log_max_size: "10m"
+    docker_log_max_file: "3"
+
+    # =============================================================================
+    # Monitoring Stack Configuration
+    # =============================================================================
+    prometheus_port: 9090
+    prometheus_retention_time: 30d
+    prometheus_scrape_interval: 30s
+    grafana_port: 3000
+    grafana_admin_user: admin
+    grafana_admin_password: "ChangeMe123!"
+    node_exporter_port: 9100
+    snmp_exporter_port: 9116
+    cadvisor_port: 8080
+
+    # =============================================================================
+    # Home Assistant Configuration
+    # =============================================================================
+    homeassistant_port: 8123
+    homeassistant_config_dir: /home/pi/network-monitoring/homeassistant
+    homeassistant_name: "Home"
+    homeassistant_latitude: "51.5074"
+    homeassistant_longitude: "-0.1278"
+    homeassistant_elevation: "11"
+    homeassistant_unit_system: "metric"
+    homeassistant_currency: "GBP"
+    homeassistant_country: "GB"
+    homeassistant_hacs_enabled: true
+    homeassistant_prometheus_enabled: true
+    homeassistant_mikrotik_enabled: true
+
+    # =============================================================================
+    # Portainer Configuration
+    # =============================================================================
+    portainer_port: 9443
+
+    # =============================================================================
+    # Watchtower Configuration
+    # =============================================================================
+    watchtower_schedule: "0 0 4 * * *"
+    watchtower_cleanup: true
+
+    # =============================================================================
+    # Tailscale Configuration
+    # =============================================================================
+    tailscale_authkey: ""
+    tailscale_advertise_routes: "192.168.88.0/24"
+    tailscale_accept_routes: true
+
+    # =============================================================================
+    # Backup Configuration
+    # =============================================================================
+    backup_retention_days: 30
+    backup_dir: /home/pi/backups
+
+    # =============================================================================
+    # Logging Configuration
+    # =============================================================================
+    ansible_log_dir: /var/log/ansible
+    boot_sync_log: /var/log/ansible-boot-sync.log
+
+    # =============================================================================
+    # Boot Sync Configuration
+    # =============================================================================
+    boot_sync_timer_enabled: false
+
