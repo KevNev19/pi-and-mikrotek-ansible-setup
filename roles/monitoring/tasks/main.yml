@@ -78,6 +78,16 @@
           allowUiUpdates: true
           options:
             path: /etc/grafana/provisioning/dashboards
+    group: "{{ pi_user }}"
+    mode: '0644'
+  tags:
+    - monitoring
+    - grafana
+
+- name: Copy Grafana dashboard files
+  ansible.builtin.copy:
+    src: dashboards/
+    dest: "{{ network_monitoring_dir }}/grafana/provisioning/dashboards/"
     owner: "{{ pi_user }}"
     group: "{{ pi_user }}"
     mode: '0644'
