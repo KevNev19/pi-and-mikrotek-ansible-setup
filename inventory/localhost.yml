@@ -5,6 +5,10 @@ all:
       ansible_connection: local
       ansible_python_interpreter: /usr/bin/python3
   vars:
+    # System Configuration
+    pi_hostname: keeper
+    pi_timezone: Europe/London
+    
     # Pi User Configuration
     pi_user: pi
     pi_home: /home/pi
@@ -15,4 +19,4 @@ all:
 
     # Directory Paths
     network_monitoring_dir: /home/pi/network-monitoring
-    config_repo_dir: /home/pi/pi-and-mikrotik-ansible-setup
+    config_repo_dir: /home/pi/pi-and-mikrotek-ansible-setup
