@@ -119,7 +119,7 @@ services:
       - /run/dbus:/run/dbus:ro
     network_mode: host
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8123/api/"]
+      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:8123/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -156,6 +156,22 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer-data:/data
+    networks:
+      - monitoring
+
+  # ===========================================================================
+  # Eufy Security - Camera Integration
+  # ===========================================================================
+  eufy-security:
+    image: bropat/eufy-security-ws:latest
+    container_name: eufy-security
+    restart: unless-stopped
+    volumes:
+      - /home/pi/eufy-security-ws:/data
+    environment:
+      - TZ=Europe/London
+    ports:
+      - "3001:3000"
     networks:
       - monitoring
 
