@@ -5,11 +5,12 @@ A self-healing, Git-driven configuration management system for Raspberry Pi 4. O
 ## Features
 
 - **Automated Boot Sync**: Pulls latest config and applies it on every boot
-- **Monitoring Stack**: Prometheus, Grafana, Node Exporter, cAdvisor, SNMP Exporter
+- **Monitoring Stack**: Prometheus, Grafana (with pre-loaded Dashboards), Node Exporter, cAdvisor, SNMP Exporter
 - **Container Management**: Docker, Portainer, Watchtower (auto-updates)
 - **Smart Home**: Home Assistant with HACS pre-installed
-- **Remote Access**: Tailscale VPN with subnet routing
-- **MikroTik Integration**: SNMP monitoring of your router
+- **Remote Access**: Tailscale VPN with **MagicDNS** and automated route configuration
+- **MikroTik Integration**: SNMP monitoring of your router with dedicated Grafana Dashboard
+- **Robust DNS**: Uses `systemd-resolved` for reliable name resolution
 
 ## Quick Start
 
@@ -56,14 +57,14 @@ cd pi-and-mikrotek-ansible-setup
 
 ### Services Available
 
-| Service | Port | URL |
-|---------|------|-----|
-| Grafana | 3000 | http://192.168.88.253:3000 |
-| Prometheus | 9090 | http://192.168.88.253:9090 |
-| Home Assistant | 8123 | http://192.168.88.253:8123 |
-| Portainer | 9443 | https://192.168.88.253:9443 |
-| Node Exporter | 9100 | http://192.168.88.253:9100 |
-| cAdvisor | 8080 | http://192.168.88.253:8080 |
+| Service | Port | Local URL | MagicDNS URL (tailscale) |
+|---------|------|-----|---|
+| Grafana | 3000 | http://192.168.88.253:3000 | http://keeper:3000 |
+| Prometheus | 9090 | http://192.168.88.253:9090 | http://keeper:9090 |
+| Home Assistant | 8123 | http://192.168.88.253:8123 | http://keeper:8123 |
+| Portainer | 9443 | https://192.168.88.253:9443 | https://keeper:9443 |
+| Node Exporter | 9100 | http://192.168.88.253:9100 | http://keeper:9100 |
+| cAdvisor | 8080 | http://192.168.88.253:8080 | http://keeper:8080 |
 
 ### Default Credentials
 
@@ -81,6 +82,7 @@ cd pi-and-mikrotek-ansible-setup
    ```bash
    sudo tailscale up --advertise-routes=192.168.88.0/24 --accept-routes
    ```
+   *Note: After this one-time login, Ansible will automatically ensure these settings are enforced on every run.*
    Then approve routes at https://login.tailscale.com/admin/machines
 
 4. **Change Grafana password** via the web UI
@@ -145,6 +147,12 @@ sudo ansible-playbook playbooks/site.yml --tags "docker,monitoring"
 # Dry run
 sudo ansible-playbook playbooks/site.yml --check
 ```
+
+## Grafana Dashboards
+
+The following dashboards are automatically provisioned:
+1. **Node Exporter Full** (ID 1860): Complete system metrics for the Raspberry Pi.
+2. **MikroTik SNMP** (ID 14420): Router performance monitoring (requires SNMP enabled on your MikroTik).
 
 ## Making Changes
 
