@@ -139,6 +139,7 @@ services:
       - WATCHTOWER_SCHEDULE=0 0 4 * * *
       - WATCHTOWER_INCLUDE_STOPPED=true
       - WATCHTOWER_REVIVE_STOPPED=true
+      - DOCKER_API_VERSION=1.44
       - TZ=Europe/London
     networks:
       - monitoring
